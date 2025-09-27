@@ -1,5 +1,7 @@
 # LVGL for frame buffer device
 
+## Introduction
+
 LVGL configured to work with `/dev/fb0` and `/dev/input/event0` on Linux.
 
 This project needs the following dependencies:
@@ -38,14 +40,34 @@ STRIP = $(STRIP_BIN)
 `LD`: the linker tool path
 `STRIP`: the strip tool path
 
-To build the project, run:
+Or you can set the `TOOLCHAIN_PREFIX` variable to the prefix of the toolchain you want to use.
 
+# Getting Started
+
+First of all, clone this repository and its submodules to your local machine:
+
+```bash
+git clone --recurse-submodules https://github.com/zimolab/hello_lvgl_v8.git
+```
+
+Then, navigate to the project directory.
+
+```bash
+cd hello_lvgl_v8
+```
+
+To create a new project based on this template, run:
+```bash
+make new
+```
+This will luanch a interactive tool to help you create a new project.
+
+To build the project, run:
 ```bash
 make
 ```
 
 To clean the project, run:
-
 ```bash
 make clean
 ```
@@ -55,7 +77,7 @@ To build the application only, run:
 make app
 ```
 
-To build the thirdparty libraries (in `libs` directory) only, run:
+To build the thirdparty libraries in `libs` directory only, run:
 ```bash
 make libs
 ```
@@ -70,14 +92,9 @@ To clean the application, run:
 make clean-app
 ```
 
-To create a new project based on this template, run:
-```bash
-make new
-```
 
-Once the project is built, the output binary can be found in the `build/bin` directory. Besides the application binary, a startup script normaly named `start.sh` will be also generated in the `build/bin` directory, which is used to start the application. And a `libs` 
-will be created in the `build/bin` directory, which contains the thirdparty libraries(`*.so`).
-So a typical directory structure of the `build/bin` directory may look like this:
+Once the project is built, the output binary can be found in the `build/bin` directory. A startup script(normaly named `start.sh`) will be also generated in the `build/bin` directory, which is used to start the application on your target device. And a `libs` 
+will be also created in the `build/bin` directory, which contains the thirdparty libraries from the `libs` directory. The `libs` directory contains the shared libraries (`*.so`). So a typical directory structure of the `build/bin` directory may look like this:
 
 ```text
 build/bin
@@ -87,11 +104,11 @@ build/bin
 ├── start.sh
 ```
 
-It is recommended to upload the whole `build/bin` directory to the target device and run the `start.sh` to start the application. The `start.sh` will automatically set the environment to run the application.
+You should upload the whole `build/bin` directory to your target device and run the startup script( `start.sh` ) to start the application. The startup script will do some neccassary work to get the application running.
 
+---
 Note: this project is made for a rk3506(a arm soc with 3 * A7 cores and 1 * M0 mcu) with a 480x800 LCD screen with a touch panel.
 It should also work on other framebuffer-based linux system, but you may need to modify some configurations in the `lv_conf.h`, `lv_drv_conf.h` and `src/main.c`.
-
 ---
 
 Thirdparty libraries intergration can be done with a simple `Makefile` file. Refer to the `libs/mylib/Makefile` for more information.
