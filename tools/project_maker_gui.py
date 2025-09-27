@@ -4,15 +4,11 @@
 This script is used to create a new project based on the current Hello_lvgl_v8 template in an interactive manner.
 GUI version using ttk.
 """
-
-#!/usr/bin/env python3
-
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, scrolledtext
 
@@ -21,33 +17,56 @@ from project_maker_base import *
 
 class LVGLProjectCreatorGUI:
     def __init__(self, root):
+
+        self.notebook = None
+        self.log_text = None
+        self.strip_entry = None
+        self.ar_entry = None
+        self.ld_entry = None
+        self.cpp_entry = None
+        self.cc_entry = None
+        self.separate_frame = None
+        self.toolchain_prefix_entry = None
+        self.prefix_frame = None
+        self.sysroot_entry = None
+        self.start_script_entry = None
+        self.work_dir_entry = None
+        self.bin_name_entry = None
+        self.project_basedir_entry = None
+        self.project_name_entry = None
+
         self.root = root
         self.root.title("LVGL v8 Project Creator")
         self.root.geometry("800x700")
 
-        self.config = ProjectConfig()
-        self.exclude_dirs = list(EXCLUDE_DIRS)
-        self.exclude_files = list(EXCLUDE_FIELS)
+        self.init_config = ProjectConfig()
+        self.cur_config = ProjectConfig()
 
-        self.project_config = ProjectConfig()
-
-        self.project_name_var = tk.StringVar(value=self.project_config.project_name)
-        self.project_basedir_var = tk.StringVar(
-            value=self.project_config.project_basedir
-        )
-        self.bin_name_var = tk.StringVar(value=self.project_config.bin_name)
-        self.work_dir_var = tk.StringVar(value=self.project_config.work_dir)
+        self.project_name_var = tk.StringVar(value=self.init_config.project_name)
+        self.project_basedir_var = tk.StringVar(value=self.init_config.project_basedir)
+        self.bin_name_var = tk.StringVar(value=self.init_config.bin_name)
+        self.work_dir_var = tk.StringVar(value=self.init_config.work_dir)
         self.start_script_var = tk.StringVar(
-            value=self.project_config.start_script_filename
+            value=self.init_config.start_script_filename
         )
         self.exclude_demos_var = tk.IntVar(
-            value=self.project_config.exclude_lvgl_demos_and_examples
+            value=self.init_config.exclude_lvgl_demos_and_examples
         )
-        self.add_mylib_var = tk.IntVar(value=self.project_config.add_mylib_demo)
-        self.sysroot_var = tk.StringVar(value="$(SYSROOT_DIR)")
+        self.add_mylib_var = tk.IntVar(value=self.init_config.add_mylib_demo)
+        self.sysroot_var = tk.StringVar(value=self.init_config.sysroot_path)
+        self.toolchain_method_var = tk.StringVar(value="prefix")
+        self.toolchain_prefix_var = tk.StringVar(
+            value=self.init_config.toolchain_prefix
+        )
+        self.cc_path_var = tk.StringVar(value=self.init_config.cc_path)
+        self.cpp_path_var = tk.StringVar(value=self.init_config.cpp_path)
+        self.ld_path_var = tk.StringVar(value=self.init_config.ld_path)
+        self.ar_path_var = tk.StringVar(value=self.init_config.ar_path)
+        self.strip_path_var = tk.StringVar(value=self.init_config.strip_path)
 
         self.create_widgets()
 
+    # noinspection PyTypeChecker
     def create_widgets(self):
         # Main frame with scrollbar
         main_frame = ttk.Frame(self.root)
@@ -56,6 +75,7 @@ class LVGLProjectCreatorGUI:
         # Create notebook for tabs
         notebook = ttk.Notebook(main_frame)
         notebook.pack(fill=tk.BOTH, expand=True)
+        self.notebook = notebook
 
         # Basic settings tab
         basic_frame = ttk.Frame(notebook, padding=10)
@@ -153,7 +173,6 @@ class LVGLProjectCreatorGUI:
         ttk.Label(toolchain_frame, text="Toolchain Specification Method:").grid(
             row=0, column=0, sticky=tk.W, pady=5
         )
-        self.toolchain_method_var = tk.StringVar(value="prefix")
         ttk.Radiobutton(
             toolchain_frame,
             text="Specify prefix",
@@ -178,7 +197,7 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.prefix_frame, text="Toolchain Prefix:").grid(
             row=0, column=0, sticky=tk.W, pady=2
         )
-        self.toolchain_prefix_var = tk.StringVar(value="$(TOOLCHAIN_PREFIX)")
+
         self.toolchain_prefix_entry = ttk.Entry(
             self.prefix_frame, textvariable=self.toolchain_prefix_var, width=50
         )
@@ -205,7 +224,7 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.separate_frame, text="C Compiler:").grid(
             row=0, column=0, sticky=tk.W, pady=2
         )
-        self.cc_path_var = tk.StringVar(value="$(C_COMPILER)")
+
         self.cc_entry = ttk.Entry(
             self.separate_frame, textvariable=self.cc_path_var, width=50
         )
@@ -224,7 +243,6 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.separate_frame, text="C++ Compiler:").grid(
             row=1, column=0, sticky=tk.W, pady=2
         )
-        self.cpp_path_var = tk.StringVar(value="$(CXX_COMPILER)")
         self.cpp_entry = ttk.Entry(
             self.separate_frame, textvariable=self.cpp_path_var, width=50
         )
@@ -243,7 +261,6 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.separate_frame, text="Linker:").grid(
             row=2, column=0, sticky=tk.W, pady=2
         )
-        self.ld_path_var = tk.StringVar(value="$(LD_BIN)")
         self.ld_entry = ttk.Entry(
             self.separate_frame, textvariable=self.ld_path_var, width=50
         )
@@ -262,7 +279,6 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.separate_frame, text="Archiver:").grid(
             row=3, column=0, sticky=tk.W, pady=2
         )
-        self.ar_path_var = tk.StringVar(value="$(AR_BIN)")
         self.ar_entry = ttk.Entry(
             self.separate_frame, textvariable=self.ar_path_var, width=50
         )
@@ -281,7 +297,6 @@ class LVGLProjectCreatorGUI:
         ttk.Label(self.separate_frame, text="Stripper:").grid(
             row=4, column=0, sticky=tk.W, pady=2
         )
-        self.strip_path_var = tk.StringVar(value="$(STRIP_BIN)")
         self.strip_entry = ttk.Entry(
             self.separate_frame, textvariable=self.strip_path_var, width=50
         )
@@ -314,6 +329,9 @@ class LVGLProjectCreatorGUI:
 
         ttk.Button(
             button_frame, text="Create Project", command=self.create_project
+        ).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(
+            button_frame, text="Clear Log", command=self.switch_and_reset_log
         ).pack(side=tk.RIGHT, padx=5)
         ttk.Button(button_frame, text="Reset", command=self.reset_form).pack(
             side=tk.RIGHT, padx=5
@@ -349,14 +367,15 @@ class LVGLProjectCreatorGUI:
         directory = filedialog.askdirectory(
             initialdir=(
                 var.get()
-                if var.get() and var.get() != "$(SYSROOT_DIR)"
+                if var.get() and var.get() != self.init_config.sysroot_path
                 else os.path.expanduser("~")
             )
         )
         if directory:
             var.set(directory)
 
-    def browse_file(self, var, title="Select file", filetypes=None):
+    @staticmethod
+    def browse_file(var, title="Select file", filetypes=None):
         """Browse for a file and set the variable"""
         if filetypes is None:
             filetypes = [("All files", "*.*")]
@@ -377,7 +396,7 @@ class LVGLProjectCreatorGUI:
         """Browse for either a file or directory based on user choice"""
         choice = messagebox.askquestion(
             "Select Type",
-            "Do you want to select a file or a directory?",
+            "Do you want to select a file or a directory? (yes=file, no=directory)",
             icon="question",
             type=messagebox.YESNOCANCEL,
         )
@@ -393,26 +412,35 @@ class LVGLProjectCreatorGUI:
         self.log_text.config(state=tk.DISABLED)
         self.root.update()
 
-    def reset_form(self):
-        self.project_name_var.set("")
-        self.project_basedir_var.set(os.path.expanduser("~"))
-        self.bin_name_var.set("app")
-        self.work_dir_var.set(r"$${SCRIPT_PATH}")
-        self.start_script_var.set("start.sh")
-        self.exclude_demos_var.set(1)
-        self.add_mylib_var.set(0)
-        self.sysroot_var.set("$(SYSROOT_DIR)")
-        self.toolchain_method_var.set("prefix")
-        self.toolchain_prefix_var.set("$(TOOLCHAIN_PREFIX)")
-        self.cc_path_var.set("$(C_COMPILER)")
-        self.cpp_path_var.set("$(CXX_COMPILER)")
-        self.ld_path_var.set("$(LD_BIN)")
-        self.ar_path_var.set("$(AR_BIN)")
-        self.strip_path_var.set("$(STRIP_BIN)")
-
+    def clear_log_text(self):
         self.log_text.config(state=tk.NORMAL)
         self.log_text.delete(1.0, tk.END)
         self.log_text.config(state=tk.DISABLED)
+        self.root.update()
+
+    def switch_and_reset_log(self):
+        self.notebook.select(2)
+        self.clear_log_text()
+        self.root.update()
+
+    def reset_form(self):
+        self.project_name_var.set(self.init_config.project_name)
+        self.project_basedir_var.set(self.init_config.project_basedir)
+        self.bin_name_var.set(self.init_config.bin_name)
+        self.work_dir_var.set(self.init_config.work_dir)
+        self.start_script_var.set(self.init_config.start_script_filename)
+        self.exclude_demos_var.set(self.init_config.exclude_lvgl_demos_and_examples)
+        self.add_mylib_var.set(self.init_config.add_mylib_demo)
+        self.sysroot_var.set(self.init_config.sysroot_path)
+        self.toolchain_method_var.set("prefix")
+        self.toolchain_prefix_var.set(self.init_config.toolchain_prefix)
+        self.cc_path_var.set(self.init_config.cc_path)
+        self.cpp_path_var.set(self.init_config.cpp_path)
+        self.ld_path_var.set(self.init_config.ld_path)
+        self.ar_path_var.set(self.init_config.ar_path)
+        self.strip_path_var.set(self.init_config.strip_path)
+        self.notebook.select(0)
+        self.clear_log_text()
 
     def create_project(self):
         # Validate required fields
@@ -433,64 +461,76 @@ class LVGLProjectCreatorGUI:
             return
 
         # Update config from GUI
-        self.config.project_name = self.project_name_var.get().strip()
-        self.config.project_basedir = self.project_basedir_var.get().strip()
-        self.config.bin_name = self.bin_name_var.get().strip()
-        self.config.work_dir = self.work_dir_var.get().strip()
-        self.config.start_script_filename = self.start_script_var.get().strip()
-        self.config.exclude_lvgl_demos_and_examples = self.exclude_demos_var.get()
-        self.config.add_mylib_demo = self.add_mylib_var.get()
-        self.config.sysroot_path = self.sysroot_var.get().strip()
+        self.cur_config.project_name = self.project_name_var.get().strip()
+        self.cur_config.project_basedir = self.project_basedir_var.get().strip()
+        self.cur_config.bin_name = self.bin_name_var.get().strip()
+        self.cur_config.work_dir = self.work_dir_var.get().strip()
+        self.cur_config.start_script_filename = self.start_script_var.get().strip()
+        self.cur_config.exclude_lvgl_demos_and_examples = self.exclude_demos_var.get()
+        self.cur_config.add_mylib_demo = self.add_mylib_var.get()
+        self.cur_config.sysroot_path = self.sysroot_var.get().strip()
 
         # Update toolchain config
         if self.toolchain_method_var.get() == "prefix":
-            self.config.toolchain_prefix = self.toolchain_prefix_var.get().strip()
+            self.cur_config.toolchain_prefix = self.toolchain_prefix_var.get().strip()
         else:
-            self.config.cc_path = self.cc_path_var.get().strip()
-            self.config.cpp_path = self.cpp_path_var.get().strip()
-            self.config.ld_path = self.ld_path_var.get().strip()
-            self.config.ar_path = self.ar_path_var.get().strip()
-            self.config.strip_path = self.strip_path_var.get().strip()
+            self.cur_config.cc_path = self.cc_path_var.get().strip()
+            self.cur_config.cpp_path = self.cpp_path_var.get().strip()
+            self.cur_config.ld_path = self.ld_path_var.get().strip()
+            self.cur_config.ar_path = self.ar_path_var.get().strip()
+            self.cur_config.strip_path = self.strip_path_var.get().strip()
 
         # Update exclude directories based on mylib selection
-        exclude_dirs = list(self.exclude_dirs)
-        if not self.config.add_mylib_demo:
+        exclude_dirs = list(EXCLUDE_DIRS)
+        if not self.cur_config.add_mylib_demo:
             exclude_dirs.append("libs/mylib/")
+
+        self.switch_and_reset_log()
 
         self.log_message("Starting project creation...")
         self.log_message(
-            "Project will be created at: " + self.config.get_project_path()
+            "Project will be created at: " + self.cur_config.get_project_path()
         )
 
         # Copy template
         success, message = copy_template_to_project_dir(
-            self.config, exclude_dirs, self.exclude_files, self.log_message
+            self.cur_config,
+            exclude_dirs,
+            list(EXCLUDE_FIELS),
+            log_callback=self.log_message,
+            exit_on_error=False,
         )
         if not success:
             messagebox.showerror("Error", message)
             return
 
         # Fix Makefile
-        success, message = fix_makefile(self.config, self.log_message)
+        success, message = fix_makefile(
+            self.cur_config, log_callback=self.log_message, exit_on_error=False
+        )
         if not success:
             messagebox.showerror("Error", message)
             return
 
         # Fix mylib demo source if needed
-        success, message = fix_mylib_demo_src(self.config, self.log_message)
+        success, message = fix_mylib_demo_src(
+            self.cur_config, log_callback=self.log_message, exit_on_error=False
+        )
         if not success:
             messagebox.showerror("Error", message)
             return
 
         self.log_message("Project created successfully!")
         self.log_message(
-            "Your project directory is: {0}".format(self.config.get_project_path())
+            "Your project directory is at: {0}".format(
+                self.cur_config.get_project_path()
+            )
         )
 
         messagebox.showinfo(
             "Success",
             "Project created successfully!\n\nProject location: {0}".format(
-                self.config.get_project_path()
+                self.cur_config.get_project_path()
             ),
         )
 

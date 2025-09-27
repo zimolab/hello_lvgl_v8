@@ -161,48 +161,47 @@ def fix_mylib_demo_var(content, config):
 def check_project_path(config, log_callback=print, exit_on_error=True):
     project_path = config.get_project_path()
     if os.path.commonprefix([project_path, TEMPLATE_DIR]) == TEMPLATE_DIR:
-        log_callback(
-            "error: project directory cannot be inside the template directory: {0}".format(
-                project_path
-            )
+        msg = "project directory cannot be inside the template directory: {0}".format(
+            project_path
         )
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
+        return False, msg
     if os.path.isdir(project_path) and os.listdir(project_path):
-        log_callback(
-            "error: project directory already exists and is not empty: {0}".format(
-                project_path
-            )
+        msg = "project directory already exists and is not empty: {0}".format(
+            project_path
         )
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
-    return True
+        return False, msg
+    return True, ""
 
 
 def copy_template_to_project_dir(
     config, exclude_dirs, exclude_files, log_callback=print, exit_on_error=True
 ):
     # check if project directory is in the template directory
-    ret = check_project_path(
+    ret, msg = check_project_path(
         config, log_callback=log_callback, exit_on_error=exit_on_error
     )
     if (not exit_on_error) and (not ret):
-        return False
+        return False, msg
 
     if not os.path.isdir(config.get_project_path()):
         log_callback(
-            "creating project directory: {0}".format(config.get_project_path())
+            "Creating project directory: {0}".format(config.get_project_path())
         )
         os.makedirs(config.get_project_path(), exist_ok=True)
 
     log_callback("Copying template to project directory...")
     if not check_rsync_available():
-        log_callback("rsync not available on your system, please install it.")
+        msg = "rsync not available on your system, please install it."
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
+        return False, msg
 
     if not copy_with_rsync(
         TEMPLATE_DIR,
@@ -210,24 +209,23 @@ def copy_template_to_project_dir(
         exclude_dirs,
         exclude_files,
     ):
-        log_callback("error: failed to copy template to project directory")
+        msg = "failed to copy template to project directory"
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
-
-    return True
+        return False, msg
+    return True, ""
 
 
 def fix_makefile(config, log_callback=print, exit_on_error=True):
     log_callback("Fixing Makefile...")
     makefile_path = abs_join(config.get_project_path(), "Makefile")
     if not os.path.isfile(makefile_path):
-        log_callback(
-            "error: Makefile not found in project directory: {0}".format(makefile_path)
-        )
+        msg = "Makefile not found in project directory: {0}".format(makefile_path)
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
+        return False, msg
 
     with open(makefile_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -245,7 +243,7 @@ def fix_makefile(config, log_callback=print, exit_on_error=True):
         f.write(content)
 
     log_callback("Makefile fixed!")
-    return True
+    return True, ""
 
 
 def fix_mylib_demo_src(config, log_callback=print, exit_on_error=True):
@@ -254,12 +252,11 @@ def fix_mylib_demo_src(config, log_callback=print, exit_on_error=True):
     log_callback("Fixing src/app.c...")
     src_path = abs_join(config.get_project_path(), "src/app.c")
     if not os.path.isfile(src_path):
-        log_callback(
-            "error: app.c not found in project directory: {0}".format(src_path)
-        )
+        msg = "app.c not found in project directory: {0}".format(src_path)
+        log_callback("error: {0}".format(msg))
         if exit_on_error:
             exit(1)
-        return False
+        return False, msg
 
     with open(src_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -277,3 +274,4 @@ def fix_mylib_demo_src(config, log_callback=print, exit_on_error=True):
     with open(src_path, "w", encoding="utf-8") as f:
         f.write(content)
     log_callback("src/app.c fixed!")
+    return True, ""
