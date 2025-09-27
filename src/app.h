@@ -5,6 +5,6 @@
 #ifndef HELLO_LVGL_V8_APP_H
 #define HELLO_LVGL_V8_APP_H
 
-extern void create_hello_world_ui();
+extern void create_hello_world_ui(void);
 
 #endif // HELLO_LVGL_V8_APP_H
