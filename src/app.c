@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "libs/mylib/mylib.h"
+
 /**
  * @brief 取随即颜色
  */
@@ -47,6 +49,12 @@ static void btn_event_cb(lv_event_t * e)
  */
 void create_hello_world_ui(void)
 {
+
+    // initialize mylib
+    mylib_init();
+    // invoke function defined in libmylib.so
+    printf("call mylib_add(2, 3) = %d\n", mylib_add(2, 3));
+
     /* 获取当前活动屏幕 */
     lv_obj_t * scr = lv_scr_act();
 

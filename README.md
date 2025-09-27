@@ -70,6 +70,11 @@ To clean the application, run:
 make clean-app
 ```
 
+To create a new project based on this template, run:
+```bash
+make new
+```
+
 Once the project is built, the output binary can be found in the `build/bin` directory. Besides the application binary, a startup script normaly named `start.sh` will be also generated in the `build/bin` directory, which is used to start the application. And a `libs` 
 will be created in the `build/bin` directory, which contains the thirdparty libraries(`*.so`).
 So a typical directory structure of the `build/bin` directory may look like this:

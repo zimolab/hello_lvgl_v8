@@ -3,7 +3,6 @@
 #include "../lv_drivers/indev/evdev.h"
 
 #include "app.h"
-#include "libs/mylib/mylib.h"
 
 #include <unistd.h>
 #include <pthread.h>
@@ -17,12 +16,6 @@
 
 int main(void)
 {
-    // initialize mylib
-    mylib_init();
-
-    // invoke function defined in libmylib.so
-    printf("call mylib_add(2, 3) = %d\n", mylib_add(2, 3));
-
     /*LittlevGL init*/
     lv_init();
 

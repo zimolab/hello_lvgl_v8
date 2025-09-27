@@ -2,13 +2,26 @@
 # Makefile
 #
 
-# toolchains, please change to your own toolchains
+TOOLCHAIN_PREFIX	:=	$(TOOLCHAIN_PREFIX)
+
+# setup the toolchain
+# ether set the TOOLCHAIN_PREFIX variable or 
+# set the C_COMPILER, CXX_COMPILER, AR_BIN, LD_BIN, STRIP_BIN paths separately
+ifneq ($(TOOLCHAIN_PREFIX), )
+CC	=	$(TOOLCHAIN_PREFIX)gcc
+CXX	=	$(TOOLCHAIN_PREFIX)g++
+AR	=	$(TOOLCHAIN_PREFIX)ar
+LD	=	$(TOOLCHAIN_PREFIX)ld
+STRIP = $(TOOLCHAIN_PREFIX)strip
+else
 CC	=	$(C_COMPILER)
 CXX	=	$(CXX_COMPILER)
 AR	=	$(AR_BIN)
 LD	=	$(LD_BIN)
-STRIP = $(STRIP_BIN)
+STRIP	=	$(STRIP_BIN)
+endif
 
+export TOOLCHAIN_PREFIX
 export CC
 export CXX
 export AR
@@ -17,7 +30,7 @@ export STRIP
 
 # feature flags
 # whether to exclude demos and examples from the build
-EXCLUDE_DEMOS_AND_EXAMPLES = 1
+EXCLUDE_DEMOS_AND_EXAMPLES	=	1
 
 # directories
 LVGL_DIR_NAME	?=	lvgl
@@ -36,12 +49,7 @@ export TARGET_SHARED_LIBS_DIR
 
 
 # distribution directory
-SYSROOT	= $(SYSROOT_DIR)
-ifeq ($(SYSROOT),)
-$(warning SYSROOT_DIR is not set, additional libraries and headers may not be found)
-else
-SYSROOT = $(abspath $(SYSROOT))
-endif
+SYSROOT	:=	$(SYSROOT_DIR)
 SYSROOT_LIB	=	$(if $(SYSROOT),$(SYSROOT)/lib)
 SYSROOT_INC	=	$(if $(SYSROOT),$(SYSROOT)/include)
 SYSROOT_USR_LIB	=	$(if $(SYSROOT),$(SYSROOT)/usr/lib)
@@ -56,12 +64,12 @@ export SYSROOT_USR_INC
 
 
 # output binary name
-BIN = app
+BIN	=	app
 export BIN
 
 # start.sh configs
 START_SCRIPT_FILENAME	=	start.sh
-WORK_DIR	=	"~"
+WORK_DIR	=	$${SCRIPT_PATH}
 
 export START_SCRIPT_FILENAME
 export WORK_DIR
@@ -95,10 +103,9 @@ LDFLAGS += $(if $(SYSROOT_USR_LIB),-L$(SYSROOT_USR_LIB))
 
 LDFLAGS	+=	-lm
 
-# show how to use third-party libraries
-LDFLAGS += -L$(LIBS_DIR)/mylib -lmylib
+LDFLAGS	+=	-L$(LIBS_DIR)/mylib -lmylib
 
-LIBRARIES := $(wildcard $(LIBS_DIR)/*)
+LIBRARIES	:=	$(wildcard $(LIBS_DIR)/*)
 
 # object file ext
 OBJEXT ?= .o
@@ -127,14 +134,14 @@ OBJS	=	$(AOBJS) $(COBJS) $(CXXOBJS)
 
 all: libs app startup
 
-# Build both libs and app
+# build application binary only
 app: $(BUILD_BIN_DIR)/$(BIN) startup
 
-# Build only libraries
+# build libraries in $(LIBS_DIR) only
 libs: $(TARGET_SHARED_LIBS_DIR)
 
 
-# Rule to build libraries
+# rules to build libraries
 $(TARGET_SHARED_LIBS_DIR): $(LIBRARIES)
 	@echo "Building libraries..."
 	@mkdir -p $@
@@ -142,7 +149,7 @@ $(TARGET_SHARED_LIBS_DIR): $(LIBRARIES)
 	@touch $@
 
 
-# Compilation rules
+# rules to build application binary
 $(BUILD_OBJ_DIR)/%.o: %.c
 	@if [ "$(CC)" = "" ]; then \
 		echo "Please specify C compiler using C_COMPILER variable"; \
@@ -170,7 +177,7 @@ $(BUILD_OBJ_DIR)/%.o: %.S
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "AS $<"
 
-# Link application
+# link
 $(BUILD_BIN_DIR)/$(BIN): $(OBJS) | $(BUILD_LIBS_DIR)
 	@if [ "$(CC)" = "" ]; then \
 		echo "Please specify C compiler using C_COMPILER variable"; \
@@ -188,7 +195,12 @@ startup:
 	@${LVGL_DIR}/tools/startup_gen.py
 
 
-# Clean targets
+new:
+	@chmod +x ${LVGL_DIR}/tools/project_maker.py
+	@${LVGL_DIR}/tools/project_maker.py
+
+
+# clean targets
 clean: clean-app clean-libs clean-all
 
 clean-app:
@@ -205,4 +217,4 @@ clean-all: clean-app clean-libs
 	@rm -rf $(BUILD_BIN_DIR)
 	@rm -rf $(BUILD_OBJ_DIR)
 
-.PHONY: all app libs startup clean clean-app clean-libs clean-all
+.PHONY: all app libs startup project clean clean-app clean-libs clean-all
