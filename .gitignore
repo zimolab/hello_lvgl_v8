@@ -56,3 +56,7 @@ dkms.conf
 .idea/
 build/
 build.sh
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
