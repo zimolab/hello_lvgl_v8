@@ -17,7 +17,7 @@ EXCLUDE_DIRS = (
     ".git/",
     "build/",
 )
-EXCLUDE_FIELS = ".vscode-ctags", "build.sh"
+EXCLUDE_FIELS = ".vscode-ctags", "build.sh", "screenshoot.png"
 
 
 def check_rsync_available():
