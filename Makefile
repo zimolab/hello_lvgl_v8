@@ -199,6 +199,10 @@ new:
 	@chmod +x ${LVGL_DIR}/tools/project_maker.py
 	@${LVGL_DIR}/tools/project_maker.py
 
+new-gui:
+	@chmod +x ${LVGL_DIR}/tools/project_maker_gui.py
+	@${LVGL_DIR}/tools/project_maker_gui.py
+
 
 # clean targets
 clean: clean-app clean-libs clean-all
@@ -217,4 +221,4 @@ clean-all: clean-app clean-libs
 	@rm -rf $(BUILD_BIN_DIR)
 	@rm -rf $(BUILD_OBJ_DIR)
 
-.PHONY: all app libs startup project clean clean-app clean-libs clean-all
+.PHONY: all app libs startup new new-gui clean clean-app clean-libs clean-all
