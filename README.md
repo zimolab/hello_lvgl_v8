@@ -19,9 +19,24 @@ The output binary will be in the `build/bin`.
 All object files will be in the `build/obj` directory by default.
 
 
-To speed up the build process, `examples` and `demos` contained in the `lvgl` library will be excluded from the compilation
-by default. If you want to include them, please set the `EXCLUDE_DEMOS_AND_EXAMPLES` variable to `0` in the `Makefile` and
-turn on the corresponding options in the `lv_conf.h` file, such as `LV_BUILD_EXAMPLES`, `LV_USE_DEMO_WIDGETS`, etc.
+To speed up the build process, `examples` and `demos` contained in the `lvgl` library will be excluded from the compilation by default. If you want to include them, please set the `EXCLUDE_DEMOS_AND_EXAMPLES` variable to `0` in the `Makefile` and turn on the corresponding options in the `lv_conf.h` file, such as `LV_BUILD_EXAMPLES`, `LV_USE_DEMO_WIDGETS`, etc.
+
+
+Before building the project, it is neccassary to set the toolchain path in the `Makefile` file, including the following variables:
+
+```makefile
+CC	=	$(C_COMPILER)
+CXX	=	$(CXX_COMPILER)
+AR	=	$(AR_BIN)
+LD	=	$(LD_BIN)
+STRIP = $(STRIP_BIN)
+```
+
+`CC`: the C compiler path
+`CXX`: the C++ compiler path
+`AR`: the archive tool path
+`LD`: the linker tool path
+`STRIP`: the strip tool path
 
 To build the project, run:
 
