@@ -62,6 +62,16 @@ make new
 ```
 This will luanch a interactive tool to help you create a new project.
 
+
+I alse provide a gui tool to create a new project:
+```bash
+make new-gui
+```
+Make sure you have `tkinter` installed, if not, you may install it with `sudo apt-get install python3-tk` on Ubuntu-based system.
+The tool looks like this:
+![project_maker_gui](./screenshoot.png)
+
+
 To build the project, run:
 ```bash
 make
