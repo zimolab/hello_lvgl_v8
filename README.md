@@ -14,7 +14,7 @@ Please change the path to the compiler and linker in the Makefile according to y
 
 The source code will be in the `src` directory by default. The `src/main.c` will be the entry point of the program.
 
-The output binary will be in the `build/bin` and `dist/`  directories by default.
+The output binary will be in the `build/bin`.
 
 All object files will be in the `build/obj` directory by default.
 
@@ -25,15 +25,53 @@ turn on the corresponding options in the `lv_conf.h` file, such as `LV_BUILD_EXA
 
 To build the project, run:
 
-```
+```bash
 make
 ```
 
 To clean the project, run:
 
-```
+```bash
 make clean
 ```
 
+To build the application only, run:
+```bash
+make app
+```
+
+To build the thirdparty libraries (in `libs` directory) only, run:
+```bash
+make libs
+```
+
+To clean the thirdparty libraries, run:
+```bash
+make clean-libs
+```
+
+To clean the application, run:
+```bash
+make clean-app
+```
+
+Once the project is built, the output binary can be found in the `build/bin` directory. Besides the application binary, a startup script normaly named `start.sh` will be also generated in the `build/bin` directory, which is used to start the application. And a `libs` 
+will be created in the `build/bin` directory, which contains the thirdparty libraries(`*.so`).
+So a typical directory structure of the `build/bin` directory may look like this:
+
+```text
+build/bin
+├── app
+├── libs
+│   ├── libmylib.so
+├── start.sh
+```
+
+It is recommended to upload the whole `build/bin` directory to the target device and run the `start.sh` to start the application. The `start.sh` will automatically set the environment to run the application.
+
 Note: this project is made for a rk3506(a arm soc with 3 * A7 cores and 1 * M0 mcu) with a 480x800 LCD screen with a touch panel.
 It should also work on other framebuffer-based linux system, but you may need to modify some configurations in the `lv_conf.h`, `lv_drv_conf.h` and `src/main.c`.
+
+---
+
+Thirdparty libraries intergration can be done with a simple `Makefile` file. Refer to the `libs/mylib/Makefile` for more information.
