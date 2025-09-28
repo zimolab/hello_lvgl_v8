@@ -1,32 +1,49 @@
 #
 # Makefile
 #
-
+TOOLCHAIN_PATH	:=	$(TOOLCHAIN_PATH)
 TOOLCHAIN_PREFIX	:=	$(TOOLCHAIN_PREFIX)
 
+# make sure the TOOLCHAIN_PATH ends with a slash if it is not empty
+ifneq ($(strip $(TOOLCHAIN_PATH)),)
+TOOLCHAIN_PATH := $(patsubst %/,%,$(TOOLCHAIN_PATH))/
+PKG_CONFIG = $(TOOLCHAIN_PATH)/pkg-config
+endif
+
 # setup the toolchain
-# ether set the TOOLCHAIN_PREFIX variable or 
-# set the C_COMPILER, CXX_COMPILER, AR_BIN, LD_BIN, STRIP_BIN paths separately
-ifneq ($(TOOLCHAIN_PREFIX), )
-CC	=	$(TOOLCHAIN_PREFIX)gcc
-CXX	=	$(TOOLCHAIN_PREFIX)g++
-AR	=	$(TOOLCHAIN_PREFIX)ar
-LD	=	$(TOOLCHAIN_PREFIX)ld
-STRIP = $(TOOLCHAIN_PREFIX)strip
+# ether set the TOOLCHAIN_PATH and TOOLCHAIN_PREFIX variable or 
+# set the C_COMPILER, CXX_COMPILER, AR_BIN, LD_BIN, STRIP_BIN, PKG_CONFIG_BIN variables separately
+# setup the toolchain
+# ether set the TOOLCHAIN_PATH and TOOLCHAIN_PREFIX variable or 
+# set the C_COMPILER, CXX_COMPILER, AR_BIN, LD_BIN, STRIP_BIN, PKG_CONFIG_BIN variables separately
+ifneq ($(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX)),)
+CC	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))gcc
+CXX	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))g++
+AR	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))ar
+LD	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))ld
+STRIP = $(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))strip
 else
 CC	=	$(C_COMPILER)
 CXX	=	$(CXX_COMPILER)
 AR	=	$(AR_BIN)
 LD	=	$(LD_BIN)
 STRIP	=	$(STRIP_BIN)
+PKG_CONFIG = $(PKG_CONFIG_BIN)
 endif
 
-export TOOLCHAIN_PREFIX
-export CC
-export CXX
-export AR
-export LD
-export STRIP
+# check if pkg-config is available
+ifeq ($(strip $(PKG_CONFIG)),)
+$(warning PKG_CONFIG variable is not set)
+endif
+
+export	TOOLCHAIN_PATH
+export	TOOLCHAIN_PREFIX
+export	CC
+export	CXX
+export	AR
+export	LD
+export	STRIP
+export	PKG_CONFIG
 
 # feature flags
 # whether to exclude demos and examples from the build
@@ -50,18 +67,7 @@ export TARGET_SHARED_LIBS_DIR
 
 # distribution directory
 SYSROOT	:=	$(SYSROOT_DIR)
-SYSROOT_LIB	=	$(if $(SYSROOT),$(SYSROOT)/lib)
-SYSROOT_INC	=	$(if $(SYSROOT),$(SYSROOT)/include)
-SYSROOT_USR_LIB	=	$(if $(SYSROOT),$(SYSROOT)/usr/lib)
-SYSROOT_USR_INC	=	$(if $(SYSROOT),$(SYSROOT)/usr/include)
-
-
 export SYSROOT
-export SYSROOT_LIB
-export SYSROOT_INC
-export SYSROOT_USR_LIB
-export SYSROOT_USR_INC
-
 
 # output binary name
 BIN	=	app
@@ -87,24 +93,47 @@ WARNINGS	=	-Wall -Wshadow -Wundef -Wmissing-prototypes -Wno-discarded-qualifiers
 				-Wno-cast-qual -Wmissing-prototypes -Wunreachable-code -Wno-switch-default -Wreturn-type -Wmultichar \
 				-Wno-discarded-qualifiers -Wformat-security -Wno-ignored-qualifiers -Wno-sign-compare
 
-# compiler flags
-CFLAGS	?=	-O3 -g0 \
-			-I$(LVGL_DIR)/ -I$(SRC_DIR) \
-			$(WARNINGS)
 
-CFLAGS += $(if $(SYSROOT_INC),-I$(SYSROOT_INC))
-CFLAGS += $(if $(SYSROOT_USR_INC),-I$(SYSROOT_USR_INC))
-CFLAGS += -I$(LIBS_DIR)
+# add your own include paths here
+INCLUDE_PATHS += -I$(LVGL_DIR) -I$(SRC_DIR) -I$(LIBS_DIR)
+
+# if you set the PKG_CONFIG variable correctly, 
+# you can use pkg-config to find the include paths like below(take glib-2.0 as an example):
+#INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
+
+# $(info include paths: $(INCLUDE_PATHS))
+
+# compiler flags
+CFLAGS	+=	-O3 -g0 \
+			$(WARNINGS) \
+			$(INCLUDE_PATHS) \
+			$(if $(SYSROOT),--sysroot=$(SYSROOT),)
+
+
+# add your own library paths here
+LIB_PATHS += -L$(LIBS_DIR)
+
+# if you set the PKG_CONFIG variable correctly, 
+# you can use pkg-config to find the library paths like below(take glib-2.0 as an example):
+#LIB_PATHS += $(shell $(PKG_CONFIG) --libs-only-L glib-2.0)
+
+# $(info library paths: $(LIB_PATHS))
+
+# add your own libraries be linked here
+LIB_LINKED += -lm
+LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib
+
+# if you set the PKG_CONFIG variable correctly, 
+# you can use pkg-config to find the libraries like this(take glib-2.0 as an example):
+#LIB_LINKED += $(shell $(PKG_CONFIG) --libs-only-l glib-2.0)
+
+# $(info libraries to be linked: $(LIB_LINKED))
 
 # linker flags
-LDFLAGS	?=	-L$(LIBS_DIR)
-LDFLAGS += $(if $(SYSROOT_LIB),-L$(SYSROOT_LIB))
-LDFLAGS += $(if $(SYSROOT_USR_LIB),-L$(SYSROOT_USR_LIB))
+LDFLAGS	+=	$(LIB_PATHS) $(LIB_LINKED) \
+			$(if $(SYSROOT),--sysroot=$(SYSROOT),)
 
-LDFLAGS	+=	-lm
-
-LDFLAGS	+=	-L$(LIBS_DIR)/mylib -lmylib
-
+# libraries under $(LIBS_DIR)
 LIBRARIES	:=	$(wildcard $(LIBS_DIR)/*)
 
 # object file ext
@@ -184,7 +213,7 @@ $(BUILD_BIN_DIR)/$(BIN): $(OBJS) | $(BUILD_LIBS_DIR)
 		exit 1; \
 	fi
 	@mkdir -p $(BUILD_BIN_DIR)
-	@$(CC) -o $@ $(OBJS) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 	@echo "Build completed. Output binary: $(BUILD_BIN_DIR)/$(BIN)"
 
 

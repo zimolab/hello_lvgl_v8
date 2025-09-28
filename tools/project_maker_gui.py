@@ -26,6 +26,7 @@ class LVGLProjectCreatorGUI:
         self.cpp_entry = None
         self.cc_entry = None
         self.separate_frame = None
+        self.toolchain_path_entry = None
         self.toolchain_prefix_entry = None
         self.prefix_frame = None
         self.sysroot_entry = None
@@ -55,6 +56,7 @@ class LVGLProjectCreatorGUI:
         self.add_mylib_var = tk.IntVar(value=self.init_config.add_mylib_demo)
         self.sysroot_var = tk.StringVar(value=self.init_config.sysroot_path)
         self.toolchain_method_var = tk.StringVar(value="prefix")
+        self.toolchain_path_var = tk.StringVar(value=self.init_config.toolchain_path)
         self.toolchain_prefix_var = tk.StringVar(
             value=self.init_config.toolchain_prefix
         )
@@ -194,23 +196,30 @@ class LVGLProjectCreatorGUI:
             row=3, column=0, columnspan=3, sticky=tk.W + tk.E, pady=5
         )
 
-        ttk.Label(self.prefix_frame, text="Toolchain Prefix:").grid(
+        # Toolchain prefix
+        ttk.Label(self.prefix_frame, text="Prefix:").grid(
             row=0, column=0, sticky=tk.W, pady=2
         )
-
         self.toolchain_prefix_entry = ttk.Entry(
             self.prefix_frame, textvariable=self.toolchain_prefix_var, width=50
+        ).grid(row=0, column=1, sticky=tk.W + tk.E, pady=2)
+
+        # Toolchain path
+        ttk.Label(self.prefix_frame, text="Path:").grid(
+            row=1, column=0, sticky=tk.W, pady=2
         )
-        self.toolchain_prefix_entry.grid(row=0, column=1, sticky=tk.W + tk.E, pady=2)
+        self.toolchain_path_entry = ttk.Entry(
+            self.prefix_frame, textvariable=self.toolchain_path_var, width=50
+        ).grid(row=1, column=1, sticky=tk.W + tk.E, pady=2)
         ttk.Button(
             self.prefix_frame,
             text="Browse",
             command=lambda: self.browse_file_or_directory(
-                self.toolchain_prefix_var,
+                self.toolchain_path_var,
                 title="Select Toolchain Directory",
                 filetypes=[],
             ),
-        ).grid(row=0, column=2, padx=5, pady=2)
+        ).grid(row=1, column=2, padx=5, pady=2)
 
         # Separate paths frame
         self.separate_frame = ttk.LabelFrame(
@@ -394,16 +403,17 @@ class LVGLProjectCreatorGUI:
 
     def browse_file_or_directory(self, var, title="Select", filetypes=None):
         """Browse for either a file or directory based on user choice"""
-        choice = messagebox.askquestion(
-            "Select Type",
-            "Do you want to select a file or a directory? (yes=file, no=directory)",
-            icon="question",
-            type=messagebox.YESNOCANCEL,
-        )
-        if choice == messagebox.YES:
-            self.browse_file(var, title, filetypes)
-        elif choice == messagebox.NO:
-            self.browse_directory(var)
+        # choice = messagebox.askquestion(
+        #     "Select Type",
+        #     "Do you want to select a file or a directory? (yes=file, no=directory)",
+        #     icon="question",
+        #     type=messagebox.YESNOCANCEL,
+        # )
+        # if choice == messagebox.YES:
+        #     self.browse_file(var, title, filetypes)
+        # elif choice == messagebox.NO:
+        #     self.browse_directory(var)
+        self.browse_directory(var)
 
     def log_message(self, message):
         self.log_text.config(state=tk.NORMAL)
@@ -472,6 +482,7 @@ class LVGLProjectCreatorGUI:
 
         # Update toolchain config
         if self.toolchain_method_var.get() == "prefix":
+            self.cur_config.toolchain_path = self.toolchain_path_var.get().strip()
             self.cur_config.toolchain_prefix = self.toolchain_prefix_var.get().strip()
         else:
             self.cur_config.cc_path = self.cc_path_var.get().strip()
@@ -508,6 +519,7 @@ class LVGLProjectCreatorGUI:
         success, message = fix_makefile(
             self.cur_config, log_callback=self.log_message, exit_on_error=False
         )
+        print("debug1")
         if not success:
             messagebox.showerror("Error", message)
             return

@@ -68,6 +68,7 @@ class ProjectConfig(object):
         self.start_script_filename = "start.sh"
         self.work_dir = r"$${SCRIPT_PATH}"
         self.add_mylib_demo = 0
+        self.toolchain_path = "$(TOOLCHAIN_PATH)"
         self.toolchain_prefix = "$(TOOLCHAIN_PREFIX)"
         self.cc_path = "$(C_COMPILER)"
         self.cpp_path = "$(CXX_COMPILER)"
@@ -100,6 +101,13 @@ def fix_bin_var(content, config):
     return content.replace(
         "BIN	=	app",
         "BIN	=	{0}".format(config.bin_name),
+    )
+
+
+def fix_toolchain_path_var(content, config):
+    return content.replace(
+        "TOOLCHAIN_PATH	:=	$(TOOLCHAIN_PATH)",
+        "TOOLCHAIN_PATH	:=	{0}".format(config.toolchain_path),
     )
 
 
@@ -152,8 +160,8 @@ def fix_work_dir_var(content, config):
 def fix_mylib_demo_var(content, config):
     if not config.add_mylib_demo:
         return content.replace(
-            "LDFLAGS	+=	-L$(LIBS_DIR)/mylib -lmylib",
-            "#LDFLAGS	+=	-L$(LIBS_DIR)/mylib -lmylib",
+            "LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib",
+            "#LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib",
         )
     return content
 
@@ -234,6 +242,7 @@ def fix_makefile(config, log_callback=print, exit_on_error=True):
     content = fix_sysroot_var(content, config)
     content = fix_bin_var(content, config)
     content = fix_toolchain_var(content, config)
+    content = fix_toolchain_path_var(content, config)
     content = fix_toolchain_bin_vars(content, config)
     content = fix_start_script_var(content, config)
     content = fix_work_dir_var(content, config)
@@ -248,7 +257,7 @@ def fix_makefile(config, log_callback=print, exit_on_error=True):
 
 def fix_mylib_demo_src(config, log_callback=print, exit_on_error=True):
     if config.add_mylib_demo:
-        return True
+        return True, ""
     log_callback("Fixing src/app.c...")
     src_path = abs_join(config.get_project_path(), "src/app.c")
     if not os.path.isfile(src_path):
