@@ -202,7 +202,8 @@ class LVGLProjectCreatorGUI:
         )
         self.toolchain_prefix_entry = ttk.Entry(
             self.prefix_frame, textvariable=self.toolchain_prefix_var, width=50
-        ).grid(row=0, column=1, sticky=tk.W + tk.E, pady=2)
+        )
+        self.toolchain_path_entry.grid(row=0, column=1, sticky=tk.W + tk.E, pady=2)
 
         # Toolchain path
         ttk.Label(self.prefix_frame, text="Path:").grid(
@@ -210,7 +211,8 @@ class LVGLProjectCreatorGUI:
         )
         self.toolchain_path_entry = ttk.Entry(
             self.prefix_frame, textvariable=self.toolchain_path_var, width=50
-        ).grid(row=1, column=1, sticky=tk.W + tk.E, pady=2)
+        )
+        self.toolchain_path_entry.grid(row=1, column=1, sticky=tk.W + tk.E, pady=2)
         ttk.Button(
             self.prefix_frame,
             text="Browse",
