@@ -3,11 +3,14 @@
 #
 TOOLCHAIN_PATH	=	$(TOOLCHAIN_PATH)
 TOOLCHAIN_PREFIX	=	$(TOOLCHAIN_PREFIX)
+PKG_CONFIG	=	$(PKG_CONFIG_BIN)
 
 # make sure the TOOLCHAIN_PATH ends with a slash if it is not empty
 ifneq ($(strip $(TOOLCHAIN_PATH)),)
 TOOLCHAIN_PATH = $(patsubst %/,%,$(TOOLCHAIN_PATH))/
-PKG_CONFIG = $(TOOLCHAIN_PATH)/pkg-config
+ifeq $($(strip $(PKG_CONFIG)),)
+PKG_CONFIG = $(TOOLCHAIN_PATH)pkg-config
+endif
 endif
 
 # setup the toolchain
@@ -28,7 +31,6 @@ CXX	=	$(CXX_COMPILER)
 AR	=	$(AR_BIN)
 LD	=	$(LD_BIN)
 STRIP	=	$(STRIP_BIN)
-PKG_CONFIG = $(PKG_CONFIG_BIN)
 endif
 
 # check if pkg-config is available
