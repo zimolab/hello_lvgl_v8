@@ -83,7 +83,7 @@ class ProjectConfig(object):
 
 def fix_exclude_lvgl_demos_and_examples_var(content, config):
     return content.replace(
-        "EXCLUDE_DEMOS_AND_EXAMPLES	=	1",
+        "EXCLUDE_DEMOS_AND_EXAMPLES	?=	1",
         "EXCLUDE_DEMOS_AND_EXAMPLES	=	{0}".format(
             int(bool(config.exclude_lvgl_demos_and_examples))
         ),
@@ -92,22 +92,22 @@ def fix_exclude_lvgl_demos_and_examples_var(content, config):
 
 def fix_sysroot_var(content, config):
     return content.replace(
-        "SYSROOT	:=	$(SYSROOT_DIR)",
-        "SYSROOT	:=	{0}".format(config.sysroot_path),
+        "SYSROOT	=	$(SYSROOT_DIR)",
+        "SYSROOT	=	{0}".format(config.sysroot_path),
     )
 
 
 def fix_bin_var(content, config):
     return content.replace(
-        "BIN	=	app",
+        "BIN	?=	app",
         "BIN	=	{0}".format(config.bin_name),
     )
 
 
 def fix_toolchain_path_var(content, config):
     return content.replace(
-        "TOOLCHAIN_PATH	:=	$(TOOLCHAIN_PATH)",
-        "TOOLCHAIN_PATH	:=	{0}".format(config.toolchain_path),
+        "TOOLCHAIN_PATH	=	$(TOOLCHAIN_PATH)",
+        "TOOLCHAIN_PATH	=	{0}".format(config.toolchain_path),
     )
 
 
@@ -145,14 +145,14 @@ def fix_toolchain_bin_vars(content, config):
 
 def fix_start_script_var(content, config):
     return content.replace(
-        "START_SCRIPT_FILENAME	=	start.sh",
+        "START_SCRIPT_FILENAME	?=	start.sh",
         "START_SCRIPT_FILENAME	=	{0}".format(config.start_script_filename),
     )
 
 
 def fix_work_dir_var(content, config):
     return content.replace(
-        r"WORK_DIR	=	$${SCRIPT_PATH}",
+        r"WORK_DIR	?=	$${SCRIPT_PATH}",
         "WORK_DIR	=	'{0}'".format(config.work_dir),
     )
 

@@ -1,12 +1,12 @@
 #
 # Makefile
 #
-TOOLCHAIN_PATH	:=	$(TOOLCHAIN_PATH)
-TOOLCHAIN_PREFIX	:=	$(TOOLCHAIN_PREFIX)
+TOOLCHAIN_PATH	=	$(TOOLCHAIN_PATH)
+TOOLCHAIN_PREFIX	=	$(TOOLCHAIN_PREFIX)
 
 # make sure the TOOLCHAIN_PATH ends with a slash if it is not empty
 ifneq ($(strip $(TOOLCHAIN_PATH)),)
-TOOLCHAIN_PATH := $(patsubst %/,%,$(TOOLCHAIN_PATH))/
+TOOLCHAIN_PATH = $(patsubst %/,%,$(TOOLCHAIN_PATH))/
 PKG_CONFIG = $(TOOLCHAIN_PATH)/pkg-config
 endif
 
@@ -47,7 +47,7 @@ export	PKG_CONFIG
 
 # feature flags
 # whether to exclude demos and examples from the build
-EXCLUDE_DEMOS_AND_EXAMPLES	=	1
+EXCLUDE_DEMOS_AND_EXAMPLES	?=	1
 
 # directories
 LVGL_DIR_NAME	?=	lvgl
@@ -66,16 +66,16 @@ export TARGET_SHARED_LIBS_DIR
 
 
 # distribution directory
-SYSROOT	:=	$(SYSROOT_DIR)
+SYSROOT	=	$(SYSROOT_DIR)
 export SYSROOT
 
 # output binary name
-BIN	=	app
+BIN	?=	app
 export BIN
 
 # start.sh configs
-START_SCRIPT_FILENAME	=	start.sh
-WORK_DIR	=	$${SCRIPT_PATH}
+START_SCRIPT_FILENAME	?=	start.sh
+WORK_DIR	?=	$${SCRIPT_PATH}
 
 export START_SCRIPT_FILENAME
 export WORK_DIR
@@ -96,23 +96,26 @@ WARNINGS	=	-Wall -Wshadow -Wundef -Wmissing-prototypes -Wno-discarded-qualifiers
 
 # add your own include paths here
 INCLUDE_PATHS += -I$(LVGL_DIR) -I$(SRC_DIR) -I$(LIBS_DIR)
-
+EXTRA_INCLUDE_PATHS = $(EXTRA_INCLUDE_PATHS)
 # if you set the PKG_CONFIG variable correctly, 
 # you can use pkg-config to find the include paths like below(take glib-2.0 as an example):
 # INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 #INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 
 # $(info include paths: $(INCLUDE_PATHS))
-
+EXTRA_CFLAGS    =   $(EXTRA_CFLAGS)
 # compiler flags
 CFLAGS	+=	-O3 -g0 \
 			$(WARNINGS) \
 			$(INCLUDE_PATHS) \
+			$(EXTRA_INCLUDE_PATHS) \
+			$(EXTRA_CFLAGS) \
 			$(if $(SYSROOT),--sysroot=$(SYSROOT),)
 
 
 # add your own library paths here
 LIB_PATHS += -L$(LIBS_DIR)
+EXTRA_LIB_PATHS = $(EXTRA_LIB_PATHS)
 
 # if you set the PKG_CONFIG variable correctly, 
 # you can use pkg-config to find the library paths like below(take glib-2.0 as an example):
@@ -122,6 +125,7 @@ LIB_PATHS += -L$(LIBS_DIR)
 
 # add your own libraries be linked here
 LIB_LINKED += -lm
+EXTRA_LIB_LINKED = $(EXTRA_LIB_LINKED)
 LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib
 
 # if you set the PKG_CONFIG variable correctly, 
@@ -131,7 +135,12 @@ LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib
 # $(info libraries to be linked: $(LIB_LINKED))
 
 # linker flags
-LDFLAGS	+=	$(LIB_PATHS) $(LIB_LINKED) \
+EXTRA_LDFLAGS	=	$(EXTRA_LDFLAGS)
+LDFLAGS	+=	$(LIB_PATHS) \
+            $(EXTRA_LIB_PATHS) \
+            $(LIB_LINKED) \
+            $(EXTRA_LIB_LINKED) \
+            $(EXTRA_LDFLAGS) \
 			$(if $(SYSROOT),--sysroot=$(SYSROOT),)
 
 # libraries under $(LIBS_DIR)
