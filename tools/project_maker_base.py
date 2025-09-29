@@ -68,8 +68,9 @@ class ProjectConfig(object):
         self.start_script_filename = "start.sh"
         self.work_dir = r"$${SCRIPT_PATH}"
         self.add_mylib_demo = 0
-        self.toolchain_path = "$(TOOLCHAIN_PATH)"
-        self.toolchain_prefix = "$(TOOLCHAIN_PREFIX)"
+        self.toolchain_path = "$(TOOLCHAIN_DIR)"
+        self.toolchain_prefix = "$(TOOLCHAIN_PRE)"
+        self.pkg_config = "$(PKG_CONFIG_BIN)"
         self.cc_path = "$(C_COMPILER)"
         self.cpp_path = "$(CXX_COMPILER)"
         self.ld_path = "$(LD_BIN)"
@@ -106,15 +107,22 @@ def fix_bin_var(content, config):
 
 def fix_toolchain_path_var(content, config):
     return content.replace(
-        "TOOLCHAIN_PATH	=	$(TOOLCHAIN_PATH)",
+        "TOOLCHAIN_PATH	=	$(TOOLCHAIN_DIR)",
         "TOOLCHAIN_PATH	=	{0}".format(config.toolchain_path),
     )
 
 
 def fix_toolchain_var(content, config):
     return content.replace(
-        "TOOLCHAIN_PREFIX	:=	$(TOOLCHAIN_PREFIX)",
+        "TOOLCHAIN_PREFIX	:=	$(TOOLCHAIN_PRE)",
         "TOOLCHAIN_PREFIX	:=	{0}".format(config.toolchain_prefix),
+    )
+
+
+def fix_pkg_config_var(content, config):
+    return content.replace(
+        "PKG_CONFIG	=	$(PKG_CONFIG_BIN)",
+        "PKG_CONFIG	=	{0}".format(config.pkg_config),
     )
 
 

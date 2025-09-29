@@ -1,13 +1,13 @@
 #
 # Makefile
 #
-TOOLCHAIN_PATH	=	$(TOOLCHAIN_PATH)
-TOOLCHAIN_PREFIX	=	$(TOOLCHAIN_PREFIX)
+TOOLCHAIN_PATH	=	$(TOOLCHAIN_DIR)
+TOOLCHAIN_PREFIX	=	$(TOOLCHAIN_PRE)
 PKG_CONFIG	=	$(PKG_CONFIG_BIN)
 
 # make sure the TOOLCHAIN_PATH ends with a slash if it is not empty
 ifneq ($(strip $(TOOLCHAIN_PATH)),)
-TOOLCHAIN_PATH = $(patsubst %/,%,$(TOOLCHAIN_PATH))/
+TOOLCHAIN_PATH := $(patsubst %/,%,$(TOOLCHAIN_PATH))/
 ifeq $($(strip $(PKG_CONFIG)),)
 PKG_CONFIG = $(TOOLCHAIN_PATH)pkg-config
 endif
@@ -98,14 +98,14 @@ WARNINGS	=	-Wall -Wshadow -Wundef -Wmissing-prototypes -Wno-discarded-qualifiers
 
 # add your own include paths here
 INCLUDE_PATHS += -I$(LVGL_DIR) -I$(SRC_DIR) -I$(LIBS_DIR)
-EXTRA_INCLUDE_PATHS = $(EXTRA_INCLUDE_PATHS)
+EXTRA_INCLUDE_PATHS ?=
 # if you set the PKG_CONFIG variable correctly, 
 # you can use pkg-config to find the include paths like below(take glib-2.0 as an example):
 # INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 #INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 
 # $(info include paths: $(INCLUDE_PATHS))
-EXTRA_CFLAGS    =   $(EXTRA_CFLAGS)
+EXTRA_CFLAGS    ?=
 # compiler flags
 CFLAGS	+=	-O3 -g0 \
 			$(WARNINGS) \
@@ -117,7 +117,7 @@ CFLAGS	+=	-O3 -g0 \
 
 # add your own library paths here
 LIB_PATHS += -L$(LIBS_DIR)
-EXTRA_LIB_PATHS = $(EXTRA_LIB_PATHS)
+EXTRA_LIB_PATHS ?=
 
 # if you set the PKG_CONFIG variable correctly, 
 # you can use pkg-config to find the library paths like below(take glib-2.0 as an example):
@@ -127,7 +127,7 @@ EXTRA_LIB_PATHS = $(EXTRA_LIB_PATHS)
 
 # add your own libraries be linked here
 LIB_LINKED += -lm
-EXTRA_LIB_LINKED = $(EXTRA_LIB_LINKED)
+EXTRA_LIB_LINKED ?=
 LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib
 
 # if you set the PKG_CONFIG variable correctly, 
@@ -137,7 +137,7 @@ LIB_LINKED	+=	-L$(LIBS_DIR)/mylib -lmylib
 # $(info libraries to be linked: $(LIB_LINKED))
 
 # linker flags
-EXTRA_LDFLAGS	=	$(EXTRA_LDFLAGS)
+EXTRA_LDFLAGS  ?=
 LDFLAGS	+=	$(LIB_PATHS) \
             $(EXTRA_LIB_PATHS) \
             $(LIB_LINKED) \
