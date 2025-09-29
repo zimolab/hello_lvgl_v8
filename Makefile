@@ -99,6 +99,7 @@ INCLUDE_PATHS += -I$(LVGL_DIR) -I$(SRC_DIR) -I$(LIBS_DIR)
 
 # if you set the PKG_CONFIG variable correctly, 
 # you can use pkg-config to find the include paths like below(take glib-2.0 as an example):
+# INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 #INCLUDE_PATHS += $(shell $(PKG_CONFIG) --cflags glib-2.0)
 
 # $(info include paths: $(INCLUDE_PATHS))
