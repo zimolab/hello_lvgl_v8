@@ -22,7 +22,7 @@ CXX	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))g++
 AR	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))ar
 LD	=	$(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))ld
 STRIP = $(strip $(TOOLCHAIN_PATH))$(strip $(TOOLCHAIN_PREFIX))strip
-PKG_CONFIG ?= $(TOOLCHAIN_PATH)pkg-config
+PKG_CONFIG := $(TOOLCHAIN_PATH)pkg-config
 else
 CC	=	$(C_COMPILER)
 CXX	=	$(CXX_COMPILER)
